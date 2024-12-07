@@ -1,0 +1,3 @@
+[submodule "bemanitools"]
+	path = bemanitools
+	url = https://github.com/djhackersdev/bemanitools
