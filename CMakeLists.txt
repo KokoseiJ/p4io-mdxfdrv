@@ -8,15 +8,20 @@ set(CMAKE_SYSROOT /usr/${toolchain})
 set(CMAKE_C_COMPILER ${toolchain}-gcc)
 
 add_compile_definitions(WIN32_LEAN_AND_MEAN
-			WINVER=0x0601
-			_WIN32_WINNT=0x0601
-			COBJMACROS)
+                        WINVER=0x0601
+                        _WIN32_WINNT=0x0601
+                        COBJMACROS)
+
+include_directories(bemanitools/src/main)
+
+add_library(util STATIC bemanitools/src/main/util/log.c
+                        bemanitools/src/main/util/mem.c
+                        bemanitools/src/main/util/str.c)
 
 add_library(aciodrv STATIC bemanitools/src/main/aciodrv/device.c
-		           bemanitools/src/main/aciodrv/port.c)
-include_directories(bemanitools/src/main
-		    bemanitools/)
+                           bemanitools/src/main/aciodrv/port.c)
+target_link_libraries(aciodrv util)
 
-add_executable(mdxftest src/main.c)
+add_executable(mdxftest src/main.c src/mdxf.c)
 target_link_libraries(mdxftest aciodrv)
 
