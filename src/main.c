@@ -2,11 +2,14 @@
 #include "aciodrv/device.h"
 #include "acio/mdxf.h"
 #include "mdxf.h"
+#include "util/log.h"
 
 int main() {
 	struct aciodrv_device_ctx *device;
 	uint8_t i, j, nodes;
 	char k;
+
+	log_to_writer(log_writer_stdout, NULL);
 
 	printf("Hello, World!\n");
 	printf("Opening connection on COM2 @ 115200\n");
@@ -49,6 +52,7 @@ int main() {
 				printf("uh oh lmao\n");
 				return -1;
 			}
+#ifndef AC_IO_MSG_LOG
 			for (j=0; j<2; j++) {
 				for (k=7; k>=0; k--) {
 					printf("%c", ( poll_in[j] >> k ) & 1 ? '1' : '0');
@@ -59,6 +63,9 @@ int main() {
 		}
 		/* faster than carriage return loam */
 		printf("\n");
+#else
+		}
+#endif
 	}
 
 	return 0;

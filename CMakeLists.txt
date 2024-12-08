@@ -10,13 +10,17 @@ set(CMAKE_C_COMPILER ${toolchain}-gcc)
 add_compile_definitions(WIN32_LEAN_AND_MEAN
                         WINVER=0x0601
                         _WIN32_WINNT=0x0601
-                        COBJMACROS)
+                        COBJMACROS
+                        # AC_IO_MSG_LOG
+)
 
 include_directories(bemanitools/src/main)
 
 add_library(util STATIC bemanitools/src/main/util/log.c
                         bemanitools/src/main/util/mem.c
-                        bemanitools/src/main/util/str.c)
+                        bemanitools/src/main/util/str.c
++                       bemanitools/src/main/util/hex.c
+)
 
 add_library(aciodrv STATIC bemanitools/src/main/aciodrv/device.c
                            bemanitools/src/main/aciodrv/port.c)
