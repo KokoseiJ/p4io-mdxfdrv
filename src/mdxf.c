@@ -1,8 +1,7 @@
-#include "aciodrv/device.h"
-#include "acio/mdxf.h"
+#include "mdxf.h"
 
 bool aciodrv_mdxf_start_auto_get(
-	struct aciodrv_device_ctx *device, uint8_t node_id, uint8_t node_count
+	struct aciodrv_device_ctx *device, uint8_t node_id
 ) {
 	struct ac_io_message msg;
 	char *dataptr;
@@ -17,21 +16,21 @@ bool aciodrv_mdxf_start_auto_get(
     
 	msg.addr = node_id + 1;
 	msg.cmd.code = ac_io_u16(AC_IO_CMD_MDXF_AUTO_GET_START);
-	msg.cmd.nbytes = 3;
+	msg.cmd.nbytes = 2;
 	/* Whatever libacio.dll sent with it */
 	msg.cmd.raw[0] = 0x80;
 	msg.cmd.raw[1] = 0x02;
-	msg.cmd.raw[2] = 0;
 
 	return aciodrv_send(device, &msg);
 }
 
 
 bool aciodrv_mdxf_recv_poll(
-	struct aciodrv_device_ctx *device, struct ac_io_mdxf_poll_in *poll_in
+	struct aciodrv_device_ctx *device, uint8_t node_id, struct ac_io_mdxf_poll_in *poll_in
 ) {
 	struct ac_io_message msg;
 	
+	msg.addr = node_id + 1;
 	msg.cmd.code = ac_io_u16(AC_IO_CMD_MDXF_POLL);
 	msg.cmd.nbytes = 3;
 
