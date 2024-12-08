@@ -5,12 +5,13 @@
 
 int main() {
 	struct aciodrv_device_ctx *device;
-	uint8_t i, j, k, nodes;
+	uint8_t i, j, nodes;
+	char k;
 
 	printf("Hello, World!\n");
-	printf("Opening connection on COM1 @ 115200\n");
+	printf("Opening connection on COM2 @ 115200\n");
 
-	device = aciodrv_device_open_path("COM1", 115200);
+	device = aciodrv_device_open_path("COM2", 115200);
 	if (!device) {
 		printf("device is not there boowomp :sadblob:");
 		return -1;

@@ -43,5 +43,6 @@ bool aciodrv_mdxf_recv_poll(
 	}
 
 	memcpy(poll_in, &msg.cmd.raw, sizeof(struct ac_io_mdxf_poll_in));
+	return true;
 }
 
