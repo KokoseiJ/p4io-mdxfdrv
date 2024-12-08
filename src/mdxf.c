@@ -1,5 +1,5 @@
 #include "aciodrv/device.h"
-#include "aciodrv/mdxf.h"
+#include "acio/mdxf.h"
 
 bool aciodrv_mdxf_start_auto_get(
 	struct aciodrv_device_ctx *device, uint8_t node_id, uint8_t node_count
@@ -23,7 +23,7 @@ bool aciodrv_mdxf_start_auto_get(
 	msg.cmd.raw[1] = 0x02;
 	msg.cmd.raw[2] = 0;
 
-	return aciodrv_send(device, &msg)
+	return aciodrv_send(device, &msg);
 }
 
 
