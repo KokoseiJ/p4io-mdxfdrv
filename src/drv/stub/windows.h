@@ -1,7 +1,7 @@
 /* Stub file defined for Linux build.
  * Defines Windows APIs that are used in parts of our codes.
  * These will either be stubbed or wrap Linux equivalent API.
- * Very ver cursed... but it compiles (hopefully).
+ * Tremendously cursed... but it compiles (hopefully).
  */
 
 #ifndef STUB_WINDOWS_H
