@@ -9,9 +9,10 @@
 
 #include <stdint.h>
 #include <byteswap.h>
+#include <asm-generic/ioctls.h>
 
-#define SETBREAK 0
-#define CLRBREAK 1
+#define SETBREAK TIOCSBRK
+#define CLRBREAK TIOCCBRK
 
 #define _byteswap_ushort bswap_16
 #define _byteswap_ulong bswap_32

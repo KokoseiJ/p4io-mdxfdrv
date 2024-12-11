@@ -4,7 +4,7 @@
 #include <time.h>
 
 BOOL EscapeCommFunction(HANDLE hFile, DWORD dwFunc) {
-	return ioctl(hFile, dwFunc == 0 ? TIOCSBRK : TIOCCBRK) == 0;
+	return ioctl(hFile, dwFunc) == 0;
 }
 
 
