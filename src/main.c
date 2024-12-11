@@ -4,17 +4,22 @@
 #include "mdxf.h"
 #include "util/log.h"
 
-int main() {
+int main(int argc, char *argv[]) {
 	struct aciodrv_device_ctx *device;
 	uint8_t i, j, nodes;
 	char k;
 
 	log_to_writer(log_writer_stdout, NULL);
 
-	printf("Hello, World!\n");
-	printf("Opening connection on COM2 @ 115200\n");
+	if (argc != 2) {
+		printf("try again with 1 argument\n");
+		return -1;
+	}
 
-	device = aciodrv_device_open_path("COM2", 115200);
+	printf("Hello, World!\n");
+	printf("Opening connection on %s @ 115200\n", argv[1]);
+
+	device = aciodrv_device_open_path(argv[1], 115200);
 	if (!device) {
 		printf("device is not there boowomp :sadblob:");
 		return -1;
