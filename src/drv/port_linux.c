@@ -68,7 +68,7 @@ cleanup:
 int aciodrv_port_read(HANDLE port_fd, void *bytes, int nbytes) {
 	int read_bytes;
 
-	if (port_fd == 0 | bytes == NULL) {
+	if (port_fd == 0 || bytes == NULL) {
 		return -1;
 	}
 
@@ -88,7 +88,7 @@ int aciodrv_port_read(HANDLE port_fd, void *bytes, int nbytes) {
 int aciodrv_port_write(HANDLE port_fd, const void *bytes, int nbytes) {
 	int written_bytes;
 
-	if (port_fd == 0 | bytes == NULL) {
+	if (port_fd == 0 || bytes == NULL) {
 		return -1;
 	}
 
