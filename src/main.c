@@ -48,7 +48,7 @@ int main() {
 
 	while (1) {
 		for (i=0; i<2; i++) {
-			if(!aciodrv_mdxf_recv_poll(device, i, &poll_in)) {
+			if(!aciodrv_mdxf_recv_poll(device, i, (struct ac_io_mdxf_poll_in *) &poll_in)) {
 				printf("uh oh lmao\n");
 				return -1;
 			}
