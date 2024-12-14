@@ -42,7 +42,7 @@ else()
                             bemanitools/src/main/util/mem.c
                             bemanitools/src/main/util/str.c
     )
-    add_library(p4io_thread STATIC src/thread/thread_windows.c)
+    add_library(p4io_thread STATIC src/thread/thread_win.c)
 endif()
 
 add_library(aciodrv STATIC bemanitools/src/main/aciodrv/device.c)
