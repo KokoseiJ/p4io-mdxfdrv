@@ -55,7 +55,7 @@ HANDLE aciodrv_port_open(const char *port_path, int baud) {
 
 	cfmakeraw(&termios_p);
 	cfsetspeed(&termios_p, bauddata);
-	handle |= TIOCM_DTR | TIOCM_RTS;
+	tioctl |= TIOCM_DTR | TIOCM_RTS;
 
 	if (tcsetattr(handle, TCSANOW, (const struct termios *) &termios_p) < 0) {
 		log_errno("tcsetattr");
