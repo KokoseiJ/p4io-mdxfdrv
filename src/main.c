@@ -3,11 +3,22 @@
 #include "acio/mdxf.h"
 #include "mdxf.h"
 #include "util/log.h"
+#include "thread/thread.h"
+
+uint8_t pad_in[4];
+
+/* I know I'm not supposed to do this...
+ * but it's poc so it should be fine right? (clueless)
+ */
+uint8_t should_stop = 0;
+
+
+void run_poll(struct aciodrv_device_ctx *device);
 
 int main(int argc, char *argv[]) {
 	struct aciodrv_device_ctx *device;
-	uint8_t i, j, nodes;
-	char k;
+	uint8_t nodes;
+	int i, j;
 
 	log_to_writer(log_writer_stdout, NULL);
 
@@ -46,33 +57,45 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	/* lord forgive me for i have sinned */
-	uint8_t poll_in[3];
+	/* yes it has no mechanism to signal other thread
+	 * unfortunately I dont care LMAOOOOO
+	 */
+	p4io_thread_t thread;
+	p4io_thread_create(&thread, run_poll, device);
 
 	printf("And let er rip!\n\n");
 
-	while (1) {
-		for (i=0; i<2; i++) {
-			if(!aciodrv_mdxf_recv_poll(device, i, (struct ac_io_mdxf_poll_in *) &poll_in)) {
-				printf("uh oh lmao\n");
-				return -1;
+	while (!should_stop) {
+		for (i=0; i<4; i++) {
+			for (j=7; j>=0; j--) {
+				printf("%c", (pad_in[i] >> j) & 1 ? '1' : '0');
 			}
-#ifndef AC_IO_MSG_LOG
-			for (j=0; j<2; j++) {
-				for (k=7; k>=0; k--) {
-					printf("%c", ( poll_in[j] >> k ) & 1 ? '1' : '0');
-				}
-				printf(" ");
-			}
-			printf("|");
+			printf(" | ");
 		}
-		/* faster than carriage return loam */
-		printf("\n");
-#else
-		}
-#endif
 	}
 
+	printf("they told me to stop wah >.<\n");
 	return 0;
+}
+
+
+void run_poll(struct aciodrv_device_ctx *device) {
+	uint8_t i;
+	/* lord forgive me for i have sinned */
+	uint8_t poll_in[3];
+
+	while (!should_stop) {
+		for (i=0; i<2; i++) {
+			if (!aciodrv_mdxf_recv_poll(device, i, (struct ac_io_mdxf_poll_in *) &poll_in)) {
+				printf("\n\n\n===============\nFailure!\n==========\n\n\n");
+				/* this is so cursed */
+				should_stop = 1;
+				return;
+			}
+			memcpy(&pad_in[2*i], poll_in, 2);
+		}
+	}
+
+	return;
 }
 
