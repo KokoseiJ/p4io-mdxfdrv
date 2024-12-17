@@ -127,10 +127,28 @@ cleanup:
  */
 int aciodrv_port_read(HANDLE port_fd, void *bytes, int nbytes) {
 	int read_bytes;
+	fd_set set;
+	struct timeval timeout;
 
 	if (port_fd == 0 || bytes == NULL) {
 		log_warning("bad port/buf");
 		return -1;
+	}
+
+	FD_ZERO(&set);
+	FD_SET(port_fd, &set);
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	
+
+	int fds = select(2, &set, NULL, NULL, &timeout);
+	if (fds == -1 ) {
+		log_errno("select");
+		return -1;
+	}
+
+	if (fds==0) {
+		return 0;
 	}
 
 	read_bytes = read(port_fd, bytes, nbytes);
