@@ -15,6 +15,9 @@ if ( NOT TARGET_LINUX )
                           # AC_IO_MSG_LOG
     )
 else()
+    find_package(PkgConfig REQUIRED)
+    pkg_search_module(LIBEVDEV REQUIRED libevdev)
+
     add_library(windows_stub STATIC src/drv/stub/windows.c)
     link_libraries(windows_stub)
     include_directories(src/drv/stub)
@@ -50,4 +53,10 @@ target_link_libraries(aciodrv aciodrv_port util)
 
 add_executable(mdxftest src/main.c src/mdxf.c)
 target_link_libraries(mdxftest aciodrv p4io_thread)
+
+if ( TARGET_LINUX )
+    add_executable(mdxfuinput src/uinput.c src/mdxf.c)
+    target_link_libraries(mdxfuinput aciodrv evdev ${LIBEVDEV_LIBRARIES})
+    target_include_directories(mdxfuinput PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
+endif()
 
