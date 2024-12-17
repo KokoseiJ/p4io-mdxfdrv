@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
 			}
 			printf(" | ");
 		}
+		printf("\n");
 	}
 
 	printf("they told me to stop wah >.<\n");
