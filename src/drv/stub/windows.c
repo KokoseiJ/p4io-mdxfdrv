@@ -6,8 +6,8 @@
 #include <time.h>
 
 BOOL EscapeCommFunction(HANDLE hFile, DWORD dwFunc) {
-	log_info("dwFunc %d stub", dwFunc);
-	// return ioctl(hFile, dwFunc) == 0;
+	log_info("dwFunc %d", dwFunc);
+	return ioctl(hFile, dwFunc) == 0;
 	return 1;
 }
 
