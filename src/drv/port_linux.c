@@ -23,15 +23,20 @@ HANDLE aciodrv_port_open(const char *port_path, int baud) {
 
 	log_info("Opening ACIO on %s at %d baud", port_path, baud);
 
+	/* Convert int to speed_t value for termios */
 	bauddata = baud_to_speed_t(baud);
 
+	/* WINE graciously rounds this to known value, unfortunately I don't care */
 	if (bauddata == B0) {
 		log_warning("Invalid baudrate %d", baud);
 		return 0;
 	}
 
+	/* CreateFile equivalent.
+	 * OPEN_EXISTING flag isn't feasible on Linux nor needed
+	 * FILE_FLAG_WRITE_THROUGH equivalent is set with termios
+	 */
 	handle = open(port_path, O_RDWR, O_NOCTTY);
-
 	if (handle < 0) {
 		log_errno("open");
 		return 0;
@@ -39,10 +44,17 @@ HANDLE aciodrv_port_open(const char *port_path, int baud) {
 
 	log_info("fd: %d", handle);
 
+	/* SetCommMask and SetupComm are WinAPI specific */
+
+	/* PurgeComm equivalent */
 	if (tcflush(handle, TCIOFLUSH) < 0) {
 		log_errno("tcflush");
 		goto cleanup;
 	}
+
+	/* SetCommTimeouts is used to make read non-blocking,
+	 * the mechanism is implemented with select() call instead
+	 */
 
 	if (tcgetattr(handle, &termios_p) < 0) {
 		log_errno("tcgetattr");
@@ -53,9 +65,37 @@ HANDLE aciodrv_port_open(const char *port_path, int baud) {
 		goto cleanup;
 	}
 
+	/* DCB part equivalent.
+	 * cfmakeraw is used to ensure no extra processing is added,
+	 * which seems to be the case for WinAPI port implementation.
+	 */
 	cfmakeraw(&termios_p);
+	
+	/* dcb.BaudRate */
 	cfsetspeed(&termios_p, bauddata);
-	tioctl |= TIOCM_DTR | TIOCM_RTS;
+
+	/* dcb.fParity = FALSE */
+	termios_p.c_iflag |= IGNPAR;
+	termios_p.c_iflag &= ~INPCK;
+	/* dcb.fDtrControl = DTR_CONTROL_ENABLE
+	 * Pull DTR line up instantly, no handshake */
+	tioctl |= TIOCM_DTR;
+	/* dcb.fOutX = FALSE; dcb.fInX = FALSE */
+	termios_p.c_iflag &= ~(IXON | IXOFF);
+	/* dcb.fErrorChar = FALSE */
+	termios_p.c_iflag &= ~PARMRK;
+	/* dcb.fRtsControl = RTS_CONTROL_ENABLE; */
+	tioctl |= TIOCM_RTS;
+	termios_p.c_cflag &= ~CRTSCTS;
+	/* dcb.ByteSize = 8 */
+	termios_p.c_iflag &= ~ISTRIP;
+	termios_p.c_cflag &= ~CSIZE;
+	termios_p.c_cflag |= CS8;
+	/* dcb.Parity = NOPARITY */
+	termios_p.c_cflag &= ~PARENB;
+	/* dcb.StopBits = ONESTOPBIT */
+	termios_p.c_cflag &= ~CSTOPB;
+	/* Xon/Xoff stuff are skipped since Xon/Xoff is disabled */
 
 	if (tcsetattr(handle, TCSANOW, (const struct termios *) &termios_p) < 0) {
 		log_errno("tcsetattr");
