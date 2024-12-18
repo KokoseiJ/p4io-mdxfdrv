@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
 	uint8_t nodes;
 	int i, err;
 	pthread_t thread;
+	struct input_absinfo absinfo = {0,};
 
 	if (argc != 2) {
 		printf("try again with 1 argument\n");
@@ -54,6 +55,7 @@ int main(int argc, char *argv[]) {
 	libevdev_set_name(dev, "P4IO DDR Pad");
 
 	libevdev_enable_event_type(dev, EV_KEY);
+	libevdev_enable_event_type(dev, EV_ABS);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_LEFT, NULL);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_DOWN, NULL);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_UP, NULL);
@@ -62,6 +64,7 @@ int main(int argc, char *argv[]) {
 	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_DOWN, NULL);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_UP, NULL);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_RIGHT, NULL);
+	libevdev_enable_event_code(dev, EV_ABS, ABS_X, &absinfo);
 
 	err = libevdev_uinput_create_from_device(
 		dev,
