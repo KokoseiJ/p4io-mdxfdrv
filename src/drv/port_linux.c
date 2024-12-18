@@ -4,6 +4,7 @@
 #include "util/log.h"
 #include <errno.h>
 #include <string.h>
+#include <sys/select.h>
 
 #define log_errno(x) log_warning("%s() failed: %d(%s)", x, errno, strerror(errno))
 
@@ -19,7 +20,7 @@ HANDLE aciodrv_port_open(const char *port_path, int baud) {
 	int handle;
 	speed_t bauddata;
 	struct termios termios_p;
-	int tioctl;
+	unsigned int tioctl;
 
 	log_info("Opening ACIO on %s at %d baud", port_path, baud);
 
@@ -44,65 +45,54 @@ HANDLE aciodrv_port_open(const char *port_path, int baud) {
 
 	log_info("fd: %d", handle);
 
-	/* SetCommMask and SetupComm are WinAPI specific */
-
-	/* PurgeComm equivalent */
-	if (tcflush(handle, TCIOFLUSH) < 0) {
-		log_errno("tcflush");
-		goto cleanup;
-	}
-
-	/* SetCommTimeouts is used to make read non-blocking,
-	 * the mechanism is implemented with select() call instead
-	 */
-
 	if (tcgetattr(handle, &termios_p) < 0) {
 		log_errno("tcgetattr");
 		goto cleanup;
 	}
+
 	if (ioctl(handle, TIOCMGET, &tioctl) < 0) {
-		log_errno("ioctl TIOCMGET");
+		log_errno("TIOCMGET");
 		goto cleanup;
 	}
 
-	/* DCB part equivalent.
-	 * cfmakeraw is used to ensure no extra processing is added,
-	 * which seems to be the case for WinAPI port implementation.
-	 */
-	cfmakeraw(&termios_p);
-	
-	/* dcb.BaudRate */
 	cfsetspeed(&termios_p, bauddata);
 
-	/* dcb.fParity = FALSE */
-	termios_p.c_iflag |= IGNPAR;
-	termios_p.c_iflag &= ~INPCK;
-	/* dcb.fDtrControl = DTR_CONTROL_ENABLE
-	 * Pull DTR line up instantly, no handshake */
-	tioctl |= TIOCM_DTR;
-	/* dcb.fOutX = FALSE; dcb.fInX = FALSE */
-	termios_p.c_iflag &= ~(IXON | IXOFF);
-	/* dcb.fErrorChar = FALSE */
-	termios_p.c_iflag &= ~PARMRK;
-	/* dcb.fRtsControl = RTS_CONTROL_ENABLE; */
-	tioctl |= TIOCM_RTS;
-	termios_p.c_cflag &= ~CRTSCTS;
-	/* dcb.ByteSize = 8 */
-	termios_p.c_iflag &= ~ISTRIP;
+	/* fuck it, just copy what wine does line-by-line */
+	termios_p.c_iflag &= ~(ISTRIP|BRKINT|IGNCR|ICRNL|INLCR|PARMRK|IMAXBEL);
+	termios_p.c_iflag |= IGNBRK | INPCK;
+	termios_p.c_oflag &= ~(OPOST);
+	termios_p.c_cflag |= CLOCAL | CREAD;
+
+	termios_p.c_lflag &= ~(ICANON|ECHO|ISIG|IEXTEN);
+	termios_p.c_lflag |= NOFLSH;
+
+	termios_p.c_cflag &= ~(PARENB|PARODD|CMSPAR);
+
+	termios_p.c_cc[VMIN] = 0;
+	termios_p.c_cc[VTIME] = 0;
+
+	/* NOPARITY */
+	termios_p.c_cflag &= ~INPCK;
+
+	// bytesize
 	termios_p.c_cflag &= ~CSIZE;
 	termios_p.c_cflag |= CS8;
-	/* dcb.Parity = NOPARITY */
-	termios_p.c_cflag &= ~PARENB;
-	/* dcb.StopBits = ONESTOPBIT */
-	termios_p.c_cflag &= ~CSTOPB;
-	/* Xon/Xoff stuff are skipped since Xon/Xoff is disabled */
 
-	if (tcsetattr(handle, TCSANOW, (const struct termios *) &termios_p) < 0) {
+	// stopbits
+	termios_p.c_cflag &= ~CSTOPB;
+
+	// no rts
+	termios_p.c_cflag &= ~CRTSCTS;
+
+	tioctl |= TIOCM_DTR | TIOCM_RTS;
+
+	if (tcsetattr(handle, TCSANOW,  &termios_p) < 0) {
 		log_errno("tcsetattr");
 		goto cleanup;
 	}
+
 	if (ioctl(handle, TIOCMSET, &tioctl) < 0) {
-		log_errno("ioctl TIOCMSET");
+		log_errno("TIOCMSET");
 		goto cleanup;
 	}
 
