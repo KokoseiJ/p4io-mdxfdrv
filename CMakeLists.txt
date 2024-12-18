@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 project(p4io_mdxfdrv VERSION 0.1 LANGUAGES C)
 
-if ( NOT TARGET_LINUX )
+if ( TARGET_WIN )
     set(CMAKE_SYSTEM_NAME Windows)
 
     set(toolchain i686-w64-mingw32)
@@ -33,7 +33,7 @@ endif()
 
 include_directories(bemanitools/src/main)
 
-if ( TARGET_LINUX )
+if ( NOT TARGET_WIN )
     add_library(aciodrv_port STATIC src/drv/port_linux.c src/drv/termios_util.c)
     add_library(util STATIC src/util/log_linux.c
                             src/util/util.c
@@ -54,7 +54,7 @@ target_link_libraries(aciodrv aciodrv_port util)
 add_executable(mdxftest src/main.c src/mdxf.c)
 target_link_libraries(mdxftest aciodrv p4io_thread)
 
-if ( TARGET_LINUX )
+if ( NOT TARGET_WIN )
     add_executable(mdxfuinput src/uinput.c src/mdxf.c)
     target_link_libraries(mdxfuinput aciodrv evdev ${LIBEVDEV_LIBRARIES})
     target_include_directories(mdxfuinput PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
