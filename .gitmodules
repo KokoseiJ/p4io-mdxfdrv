@@ -1,3 +1,6 @@
 [submodule "bemanitools"]
 	path = bemanitools
 	url = https://github.com/djhackersdev/bemanitools
+[submodule "extern/libusb-cmake"]
+	path = extern/libusb-cmake
+	url = https://github.com/libusb/libusb-cmake

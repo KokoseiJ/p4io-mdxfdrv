@@ -31,6 +31,8 @@ else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
 endif()
 
+add_subdirectory(extern/libusb-cmake)
+
 include_directories(bemanitools/src/main)
 
 if ( NOT TARGET_WIN )
