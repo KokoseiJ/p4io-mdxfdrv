@@ -1,7 +1,5 @@
-#include <stdio.h>
+#include "p4io.h"
 #include <string.h>
-#include <time.h>
-#include <libusb.h>
 
 //#define VID 0x0b05
 //#define PID 0x19b6
@@ -10,14 +8,14 @@
 
 #define P4IO_USBCONFIG_INDEX 0
 
-#define INTERRUPT_SIZE 0x10
+#define INTERRUPT_SIZE P4IO_INT_SIZE
 #define BULK_SIZE 64
 #define LIGHTS_SIZE 0x10
 
 #define P4IO_CMD_LIGHTS 0x12
 
 #define USB_FRAME 1000
-#define USB_NANOFRAME 1000 / 8
+#define USB_NANOFRAME USB_FRAME / 8
 
 /*
 LIBUSB_ENDPOINT_TRANSFER_TYPE_CONTROL
@@ -34,7 +32,12 @@ Interrupt endpoint.
 */
 
 
-int get_p4io_endpoints(libusb_device_handle *dev_handle,
+libusb_device_handle *p4io_open(libusb_context *ctx) {
+	return libusb_open_device_with_vid_pid(ctx, VID, PID);
+}
+
+
+int p4io_get_endpoints(libusb_device_handle *dev_handle,
 			struct libusb_endpoint_descriptor **bulk_out,
 			struct libusb_endpoint_descriptor **bulk_in,
 			struct libusb_endpoint_descriptor **intr_in) {
@@ -81,7 +84,7 @@ uint8_t p4io_logb(uint8_t x) {
 }
 
 
-int calculate_interval_usec(libusb_device_handle *dev_handle, uint8_t bInterval) {
+int usb_get_interval_usec(libusb_device_handle *dev_handle, uint8_t bInterval) {
 	int usec;
 	switch (libusb_get_device_speed(libusb_get_device(dev_handle))) {
 	case LIBUSB_SPEED_SUPER_PLUS:
@@ -107,52 +110,11 @@ int calculate_interval_usec(libusb_device_handle *dev_handle, uint8_t bInterval)
 	return usec;
 }
 
-int main() {
-	uint8_t int_buffer[INTERRUPT_SIZE];
-	int rtnval, i, j, transferred, interval_usec;
-	libusb_device_handle *dev_handle = NULL;
-	struct libusb_endpoint_descriptor *bulk_out, *bulk_in, *intr_in;
 
-	struct timespec t = {1, 0};
+int p4io_poll(libusb_device_handle *dev_handle, uint8_t endpoint, uint8_t *buffer) {
+	int transferred;
 
-	libusb_init_context(NULL, NULL, 0);
-
-	dev_handle = libusb_open_device_with_vid_pid(NULL, VID, PID); // to be freed
-	if (dev_handle == NULL) {
-		printf("[!] dev_handle not found. vid: 0x%04hx hid: 0x%04hx\n", VID, PID);
-		goto CLEAN;
-	}
-
-	get_p4io_endpoints(dev_handle, &bulk_out, &bulk_in, &intr_in);
-	interval_usec = calculate_interval_usec(dev_handle, intr_in->bInterval);
-
-	printf("[*] Starting input read\n");
-
-	printf("(%d usec)\n", interval_usec);
-
-	t.tv_sec = 0;
-	t.tv_nsec = interval_usec * 1000;
-
-	while (1) {
-		memset(int_buffer, 0, INTERRUPT_SIZE);
-		transferred = 0;
-
-		rtnval = libusb_interrupt_transfer(dev_handle, intr_in->bEndpointAddress, (uint8_t *) int_buffer, INTERRUPT_SIZE, &transferred, 0);
-
-		for (i=0; i<4; i++) {
-			for (j=0; j<8; j++) {
-				// Printing from LSB so it's more intuitive when writing struct bitfield
-				printf("%c", (int_buffer[i] >> j) & 1 ? '1' : '0');
-			}
-			printf(" | ");
-		}
-		printf("\n");
-		nanosleep(&t, NULL);
-	}
-
-	libusb_close(dev_handle);
-
-CLEAN:
-	libusb_exit(NULL);
+	memset(buffer, 0, INTERRUPT_SIZE);
+	return libusb_interrupt_transfer(dev_handle, endpoint, buffer, INTERRUPT_SIZE, &transferred, 0);
 }
 

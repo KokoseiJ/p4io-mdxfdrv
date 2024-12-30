@@ -56,8 +56,10 @@ target_link_libraries(aciodrv aciodrv_port util)
 add_executable(mdxftest src/main.c src/mdxf.c)
 target_link_libraries(mdxftest aciodrv p4io_thread)
 
-add_executable(p4iotest src/p4io.c)
-target_link_libraries(p4iotest usb-1.0)
+add_library(p4io STATIC src/p4io.c)
+add_executable(p4iotest src/p4iotest.c)
+target_link_libraries(p4io usb-1.0)
+target_link_libraries(p4iotest p4io)
 
 if ( NOT TARGET_WIN )
     add_executable(mdxfuinput src/uinput.c src/mdxf.c)
