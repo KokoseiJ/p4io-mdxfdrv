@@ -8,16 +8,33 @@
 #include <libevdev/libevdev.h>
 #include <libevdev/libevdev-uinput.h>
 
+// TODO: Maybe split the device into 2 or 3 and map inputs to sensible buttons
 
-#define DDR_1P_LEFT 	BTN_0
-#define DDR_1P_DOWN 	BTN_1
-#define DDR_1P_UP 	BTN_2
-#define DDR_1P_RIGHT 	BTN_3
+#define DDR_1P_LEFT 		BTN_0
+#define DDR_1P_DOWN 		BTN_1
+#define DDR_1P_UP 		BTN_2
+#define DDR_1P_RIGHT 		BTN_3
 
-#define DDR_2P_LEFT 	BTN_4
-#define DDR_2P_DOWN	BTN_5
-#define DDR_2P_UP	BTN_6
-#define DDR_2P_RIGHT	BTN_7
+#define DDR_2P_LEFT 		BTN_4
+#define DDR_2P_DOWN		BTN_5
+#define DDR_2P_UP		BTN_6
+#define DDR_2P_RIGHT		BTN_7
+
+#define DDR_1P_MENU_LEFT 	BTN_8
+#define DDR_1P_MENU_DOWN 	BTN_9
+#define DDR_1P_MENU_UP 		BTN_TRIGGER
+#define DDR_1P_MENU_RIGHT	BTN_THUMB
+#define DDR_1P_MENU_OK 		BTN_THUMB2
+
+#define DDR_2P_MENU_LEFT 	BTN_TOP
+#define DDR_2P_MENU_DOWN 	BTN_TOP2
+#define DDR_2P_MENU_UP 		BTN_PINKIE
+#define DDR_2P_MENU_RIGHT 	BTN_BASE
+#define DDR_2P_MENU_OK 		BTN_BASE2
+
+#define DDR_OP_TEST 		BTN_BASE3
+#define DDR_OP_SERVICE 		BTN_BASE4
+#define DDR_OP_COIN 		BTN_BASE5
 
 struct p4io_pad {
 	uint8_t p1_down : 4;
@@ -55,15 +72,34 @@ int main(int argc, char *argv[]) {
 	libevdev_set_name(dev, "P4IO DDR Pad");
 
 	libevdev_enable_event_type(dev, EV_KEY);
-	libevdev_enable_event_type(dev, EV_ABS);
+
 	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_LEFT, NULL);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_DOWN, NULL);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_UP, NULL);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_RIGHT, NULL);
+
 	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_LEFT, NULL);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_DOWN, NULL);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_UP, NULL);
 	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_RIGHT, NULL);
+
+	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_LEFT, NULL);
+	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_DOWN, NULL);
+	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_UP, NULL);
+	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_RIGHT, NULL);
+	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_OK, NULL);
+
+	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_MENU_LEFT, NULL);
+	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_MENU_DOWN, NULL);
+	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_MENU_UP, NULL);
+	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_MENU_RIGHT, NULL);
+	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_OK, NULL);
+
+	libevdev_enable_event_code(dev, EV_KEY, DDR_OP_TEST, NULL);
+	libevdev_enable_event_code(dev, EV_KEY, DDR_OP_SERVICE, NULL);
+	libevdev_enable_event_code(dev, EV_KEY, DDR_OP_COIN, NULL);
+
+	libevdev_enable_event_type(dev, EV_ABS);
 	libevdev_enable_event_code(dev, EV_ABS, ABS_X, &absinfo);
 
 	err = libevdev_uinput_create_from_device(
