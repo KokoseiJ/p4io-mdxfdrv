@@ -3,7 +3,7 @@
 
 
 int main() {
-	uint8_t int_buffer[P4IO_INT_SIZE];
+	struct p4io_data int_buffer;
 	int rtnval, i, j, transferred, interval_usec;
 	libusb_device_handle *dev_handle = NULL;
 	struct libusb_endpoint_descriptor *bulk_out, *bulk_in, *intr_in;
@@ -29,16 +29,32 @@ int main() {
 	t.tv_nsec = interval_usec * 1000;
 
 	while (1) {
-		p4io_poll(dev_handle, intr_in->bEndpointAddress, int_buffer);
+		p4io_poll(dev_handle, intr_in->bEndpointAddress, &int_buffer);
 
+		/*
 		for (i=0; i<4; i++) {
 			for (j=0; j<8; j++) {
 				// Printing from LSB so it's more intuitive when writing struct bitfield
 				printf("%c", (int_buffer[i] >> j) & 1 ? '1' : '0');
-			}
+	i		}
 			printf(" | ");
 		}
-		printf("\n");
+		*/
+		printf(
+			"1o %d 1u %d 1d %d 1l %d 1r %d 2o %d 2u %d 2d %d 2l %d 2r %d oc %d os %d ot %d\n",
+			int_buffer.p1_ok,
+			int_buffer.p1_up,
+			int_buffer.p1_down,
+			int_buffer.p1_left,
+			int_buffer.p1_right,
+			int_buffer.p2_ok,
+			int_buffer.p2_up,
+			int_buffer.p2_down,
+			int_buffer.p2_left,
+			int_buffer.p2_right,
+			int_buffer.op_coin,
+			int_buffer.op_service,
+			int_buffer.op_test);
 		nanosleep(&t, NULL);
 	}
 
