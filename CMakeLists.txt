@@ -63,7 +63,7 @@ target_link_libraries(p4iotest p4io)
 
 if ( NOT TARGET_WIN )
     add_executable(mdxfuinput src/uinput.c src/mdxf.c)
-    target_link_libraries(mdxfuinput aciodrv evdev ${LIBEVDEV_LIBRARIES})
+    target_link_libraries(mdxfuinput aciodrv p4io evdev ${LIBEVDEV_LIBRARIES})
     target_include_directories(mdxfuinput PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
 endif()
 

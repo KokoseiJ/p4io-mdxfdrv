@@ -2,8 +2,10 @@
 #include "aciodrv/device.h"
 #include "acio/mdxf.h"
 #include "mdxf.h"
+#include "p4io.h"
 
 #include <pthread.h>
+#include <time.h>
 
 #include <libevdev/libevdev.h>
 #include <libevdev/libevdev-uinput.h>
@@ -56,8 +58,14 @@ int main(int argc, char *argv[]) {
 	struct libevdev *dev;
 	struct libevdev_uinput *uidev;
 	struct aciodrv_device_ctx *device;
+	
+	libusb_device_handle *p4io_h = NULL;
+	struct libusb_endpoint_descriptor *bulk_out, *bulk_in, *intr_in;
+	struct p4io_data int_buffer;
+	struct timespec t;
+
 	uint8_t nodes;
-	int i, err;
+	int i, err, interval;
 	pthread_t thread;
 	struct input_absinfo absinfo = {0,};
 
@@ -112,6 +120,21 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
+	printf("Opening P4IO...\n");
+	p4io_h = p4io_open(NULL);
+	if (p4io_h == NULL) {
+		printf("[!] P4IO Not Found!\n");
+		libusb_exit(NULL);
+		return -1;
+	}
+
+	p4io_get_endpoints(p4io_h, &bulk_out, &bulk_in, &intr_in);
+	interval = usb_get_interval_usec(p4io_h, intr_in->bInterval);
+
+	printf("Input interval: %d\n", interval);
+	t.tv_sec = 0;
+	t.tv_nsec = interval * 1000;
+
 	printf("Opening connection on %s @ 115200\n", argv[1]);
 
 	device = aciodrv_device_open_path(argv[1], 115200);
@@ -150,6 +173,22 @@ int main(int argc, char *argv[]) {
 	printf("And let er rip!\n\n");
 
 	while (1) {
+		p4io_poll(p4io_h, intr_in->bEndpointAddress, &int_buffer);
+
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_MENU_LEFT, int_buffer.p1_left);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_MENU_DOWN, int_buffer.p1_down);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_MENU_UP, int_buffer.p1_up);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_MENU_RIGHT, int_buffer.p1_right);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_MENU_OK, int_buffer.p1_ok);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_MENU_LEFT, int_buffer.p2_left);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_MENU_DOWN, int_buffer.p2_down);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_MENU_UP, int_buffer.p2_up);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_MENU_RIGHT, int_buffer.p2_right);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_MENU_OK, int_buffer.p2_ok);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_OP_TEST, int_buffer.op_test);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_OP_SERVICE, int_buffer.op_service);
+		libevdev_uinput_write_event(uidev, EV_KEY, DDR_OP_COIN, int_buffer.op_coin);
+
 		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_LEFT, pad_in.p1_left ? 1 : 0);
 		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_DOWN, pad_in.p1_down ? 1 : 0);
 		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_UP, pad_in.p1_up ? 1 : 0);
@@ -159,6 +198,8 @@ int main(int argc, char *argv[]) {
 		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_UP, pad_in.p2_up ? 1 : 0);
 		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_RIGHT, pad_in.p2_right ? 1 : 0);
 		libevdev_uinput_write_event(uidev, EV_SYN, SYN_REPORT, 0);
+
+		nanosleep(&t, NULL);
 	}
 
 	printf("they told me to stop wah >.<\n");
