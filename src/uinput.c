@@ -121,6 +121,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	printf("Opening P4IO...\n");
+	libusb_init_context(NULL, NULL, 0);
 	p4io_h = p4io_open(NULL);
 	if (p4io_h == NULL) {
 		printf("[!] P4IO Not Found!\n");
