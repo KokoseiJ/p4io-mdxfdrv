@@ -17,26 +17,26 @@
 #define DDR_1P_UP 		BTN_2
 #define DDR_1P_RIGHT 		BTN_3
 
-#define DDR_2P_LEFT 		BTN_4
-#define DDR_2P_DOWN		BTN_5
-#define DDR_2P_UP		BTN_6
-#define DDR_2P_RIGHT		BTN_7
+#define DDR_2P_LEFT 		BTN_0
+#define DDR_2P_DOWN		BTN_1
+#define DDR_2P_UP		BTN_2
+#define DDR_2P_RIGHT		BTN_3
 
-#define DDR_1P_MENU_LEFT 	BTN_8
-#define DDR_1P_MENU_DOWN 	BTN_9
-#define DDR_1P_MENU_UP 		BTN_TRIGGER
-#define DDR_1P_MENU_RIGHT	BTN_THUMB
-#define DDR_1P_MENU_OK 		BTN_THUMB2
+#define DDR_1P_MENU_LEFT 	BTN_4
+#define DDR_1P_MENU_DOWN 	BTN_5
+#define DDR_1P_MENU_UP 		BTN_6
+#define DDR_1P_MENU_RIGHT	BTN_7
+#define DDR_1P_MENU_OK 		BTN_8
 
-#define DDR_2P_MENU_LEFT 	BTN_TOP
-#define DDR_2P_MENU_DOWN 	BTN_TOP2
-#define DDR_2P_MENU_UP 		BTN_PINKIE
-#define DDR_2P_MENU_RIGHT 	BTN_BASE
-#define DDR_2P_MENU_OK 		BTN_BASE2
+#define DDR_2P_MENU_LEFT 	BTN_4
+#define DDR_2P_MENU_DOWN 	BTN_5
+#define DDR_2P_MENU_UP 		BTN_6
+#define DDR_2P_MENU_RIGHT 	BTN_7
+#define DDR_2P_MENU_OK 		BTN_8
 
-#define DDR_OP_TEST 		BTN_BASE3
-#define DDR_OP_SERVICE 		BTN_BASE4
-#define DDR_OP_COIN 		BTN_BASE5
+#define DDR_OP_TEST 		BTN_0
+#define DDR_OP_SERVICE 		BTN_1
+#define DDR_OP_COIN 		BTN_2
 
 struct p4io_pad {
 	uint8_t p1_down : 4;
@@ -55,8 +55,8 @@ void *run_poll(struct aciodrv_device_ctx *device);
 
 
 int main(int argc, char *argv[]) {
-	struct libevdev *dev;
-	struct libevdev_uinput *uidev;
+	struct libevdev *p1dev, *p2dev, *opdev;
+	struct libevdev_uinput *p1uidev, *p2uidev, *opuidev;
 	struct aciodrv_device_ctx *device;
 	
 	libusb_device_handle *p4io_h = NULL;
@@ -76,44 +76,66 @@ int main(int argc, char *argv[]) {
 
 	printf("Hello, World!\n");
 	
-	dev = libevdev_new();
-	libevdev_set_name(dev, "P4IO DDR Pad");
+	p1dev = libevdev_new();
+	p2dev = libevdev_new();
+	opdev = libevdev_new();
+	libevdev_set_name(p1dev, "P4IO DDR P1");
+	libevdev_set_name(p2dev, "P4IO DDR P2");
+	libevdev_set_name(opdev, "P4IO DDR OP");
 
-	libevdev_enable_event_type(dev, EV_KEY);
+	libevdev_enable_event_type(p1dev, EV_KEY);
+	libevdev_enable_event_type(p2dev, EV_KEY);
+	libevdev_enable_event_type(opdev, EV_KEY);
 
-	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_LEFT, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_DOWN, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_UP, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_RIGHT, NULL);
+	libevdev_enable_event_code(p1dev, EV_KEY, DDR_1P_LEFT, NULL);
+	libevdev_enable_event_code(p1dev, EV_KEY, DDR_1P_DOWN, NULL);
+	libevdev_enable_event_code(p1dev, EV_KEY, DDR_1P_UP, NULL);
+	libevdev_enable_event_code(p1dev, EV_KEY, DDR_1P_RIGHT, NULL);
 
-	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_LEFT, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_DOWN, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_UP, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_RIGHT, NULL);
+	libevdev_enable_event_code(p1dev, EV_KEY, DDR_1P_MENU_LEFT, NULL);
+	libevdev_enable_event_code(p1dev, EV_KEY, DDR_1P_MENU_DOWN, NULL);
+	libevdev_enable_event_code(p1dev, EV_KEY, DDR_1P_MENU_UP, NULL);
+	libevdev_enable_event_code(p1dev, EV_KEY, DDR_1P_MENU_RIGHT, NULL);
+	libevdev_enable_event_code(p1dev, EV_KEY, DDR_1P_MENU_OK, NULL);
 
-	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_LEFT, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_DOWN, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_UP, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_RIGHT, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_OK, NULL);
+	libevdev_enable_event_code(p2dev, EV_KEY, DDR_2P_LEFT, NULL);
+	libevdev_enable_event_code(p2dev, EV_KEY, DDR_2P_DOWN, NULL);
+	libevdev_enable_event_code(p2dev, EV_KEY, DDR_2P_UP, NULL);
+	libevdev_enable_event_code(p2dev, EV_KEY, DDR_2P_RIGHT, NULL);
 
-	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_MENU_LEFT, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_MENU_DOWN, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_MENU_UP, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_2P_MENU_RIGHT, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_1P_MENU_OK, NULL);
+	libevdev_enable_event_code(p2dev, EV_KEY, DDR_2P_MENU_LEFT, NULL);
+	libevdev_enable_event_code(p2dev, EV_KEY, DDR_2P_MENU_DOWN, NULL);
+	libevdev_enable_event_code(p2dev, EV_KEY, DDR_2P_MENU_UP, NULL);
+	libevdev_enable_event_code(p2dev, EV_KEY, DDR_2P_MENU_RIGHT, NULL);
+	libevdev_enable_event_code(p2dev, EV_KEY, DDR_1P_MENU_OK, NULL);
 
-	libevdev_enable_event_code(dev, EV_KEY, DDR_OP_TEST, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_OP_SERVICE, NULL);
-	libevdev_enable_event_code(dev, EV_KEY, DDR_OP_COIN, NULL);
+	libevdev_enable_event_code(opdev, EV_KEY, DDR_OP_TEST, NULL);
+	libevdev_enable_event_code(opdev, EV_KEY, DDR_OP_SERVICE, NULL);
+	libevdev_enable_event_code(opdev, EV_KEY, DDR_OP_COIN, NULL);
 
-	libevdev_enable_event_type(dev, EV_ABS);
-	libevdev_enable_event_code(dev, EV_ABS, ABS_X, &absinfo);
+	libevdev_enable_event_type(p1dev, EV_ABS);
+	libevdev_enable_event_code(p1dev, EV_ABS, ABS_X, &absinfo);
+	libevdev_enable_event_type(p2dev, EV_ABS);
+	libevdev_enable_event_code(p2dev, EV_ABS, ABS_X, &absinfo);
+	libevdev_enable_event_type(opdev, EV_ABS);
+	libevdev_enable_event_code(opdev, EV_ABS, ABS_X, &absinfo);
 
 	err = libevdev_uinput_create_from_device(
-		dev,
+		p1dev,
 		LIBEVDEV_UINPUT_OPEN_MANAGED,
-		&uidev
+		&p1uidev
+	);
+
+	err = libevdev_uinput_create_from_device(
+		p2dev,
+		LIBEVDEV_UINPUT_OPEN_MANAGED,
+		&p2uidev
+	);
+
+	err = libevdev_uinput_create_from_device(
+		opdev,
+		LIBEVDEV_UINPUT_OPEN_MANAGED,
+		&opuidev
 	);
 	if (err != 0) {
 		printf("Failed to create uinput device: %d\n", err);
@@ -156,9 +178,6 @@ int main(int argc, char *argv[]) {
 
 	/* open path should've opened all nodes already */
 
-	printf("press enter to start polling...");
-	getchar();
-
 	printf("Sending 0x0116 start polling...\n");
 	if (!aciodrv_mdxf_start_auto_get(device, 0)) {
 		printf("and mdxf didnt like that. boowomp");
@@ -176,29 +195,31 @@ int main(int argc, char *argv[]) {
 	while (1) {
 		p4io_poll(p4io_h, intr_in->bEndpointAddress, &int_buffer);
 
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_MENU_LEFT, int_buffer.p1_left);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_MENU_DOWN, int_buffer.p1_down);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_MENU_UP, int_buffer.p1_up);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_MENU_RIGHT, int_buffer.p1_right);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_MENU_OK, int_buffer.p1_ok);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_MENU_LEFT, int_buffer.p2_left);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_MENU_DOWN, int_buffer.p2_down);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_MENU_UP, int_buffer.p2_up);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_MENU_RIGHT, int_buffer.p2_right);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_MENU_OK, int_buffer.p2_ok);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_OP_TEST, int_buffer.op_test);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_OP_SERVICE, int_buffer.op_service);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_OP_COIN, int_buffer.op_coin);
+		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_MENU_LEFT, int_buffer.p1_left);
+		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_MENU_DOWN, int_buffer.p1_down);
+		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_MENU_UP, int_buffer.p1_up);
+		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_MENU_RIGHT, int_buffer.p1_right);
+		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_MENU_OK, int_buffer.p1_ok);
+		libevdev_uinput_write_event(p2uidev, EV_KEY, DDR_2P_MENU_LEFT, int_buffer.p2_left);
+		libevdev_uinput_write_event(p2uidev, EV_KEY, DDR_2P_MENU_DOWN, int_buffer.p2_down);
+		libevdev_uinput_write_event(p2uidev, EV_KEY, DDR_2P_MENU_UP, int_buffer.p2_up);
+		libevdev_uinput_write_event(p2uidev, EV_KEY, DDR_2P_MENU_RIGHT, int_buffer.p2_right);
+		libevdev_uinput_write_event(p2uidev, EV_KEY, DDR_2P_MENU_OK, int_buffer.p2_ok);
+		libevdev_uinput_write_event(opuidev, EV_KEY, DDR_OP_TEST, int_buffer.op_test);
+		libevdev_uinput_write_event(opuidev, EV_KEY, DDR_OP_SERVICE, int_buffer.op_service);
+		libevdev_uinput_write_event(opuidev, EV_KEY, DDR_OP_COIN, int_buffer.op_coin);
 
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_LEFT, pad_in.p1_left ? 1 : 0);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_DOWN, pad_in.p1_down ? 1 : 0);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_UP, pad_in.p1_up ? 1 : 0);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_1P_RIGHT, pad_in.p1_right ? 1 : 0);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_LEFT, pad_in.p2_left ? 1 : 0);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_DOWN, pad_in.p2_down ? 1 : 0);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_UP, pad_in.p2_up ? 1 : 0);
-		libevdev_uinput_write_event(uidev, EV_KEY, DDR_2P_RIGHT, pad_in.p2_right ? 1 : 0);
-		libevdev_uinput_write_event(uidev, EV_SYN, SYN_REPORT, 0);
+		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_LEFT, pad_in.p1_left ? 1 : 0);
+		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_DOWN, pad_in.p1_down ? 1 : 0);
+		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_UP, pad_in.p1_up ? 1 : 0);
+		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_RIGHT, pad_in.p1_right ? 1 : 0);
+		libevdev_uinput_write_event(p2uidev, EV_KEY, DDR_2P_LEFT, pad_in.p2_left ? 1 : 0);
+		libevdev_uinput_write_event(p2uidev, EV_KEY, DDR_2P_DOWN, pad_in.p2_down ? 1 : 0);
+		libevdev_uinput_write_event(p2uidev, EV_KEY, DDR_2P_UP, pad_in.p2_up ? 1 : 0);
+		libevdev_uinput_write_event(p2uidev, EV_KEY, DDR_2P_RIGHT, pad_in.p2_right ? 1 : 0);
+		libevdev_uinput_write_event(p1uidev, EV_SYN, SYN_REPORT, 0);
+		libevdev_uinput_write_event(p2uidev, EV_SYN, SYN_REPORT, 0);
+		libevdev_uinput_write_event(opuidev, EV_SYN, SYN_REPORT, 0);
 
 		nanosleep(&t, NULL);
 	}
