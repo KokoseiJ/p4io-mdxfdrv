@@ -112,9 +112,11 @@ int usb_get_interval_usec(libusb_device_handle *dev_handle, uint8_t bInterval) {
 
 
 int p4io_poll(libusb_device_handle *dev_handle, uint8_t endpoint, struct p4io_data *buffer) {
-	int transferred;
+	int transferred, err;
+	uint8_t usb_buf[INTERRUPT_SIZE];
 
-	memset((void *) buffer, 0, INTERRUPT_SIZE);
-	return libusb_interrupt_transfer(dev_handle, endpoint, (void *) buffer, INTERRUPT_SIZE, &transferred, 0);
+	memset(usb_buf, 0, INTERRUPT_SIZE);
+	err = libusb_interrupt_transfer(dev_handle, endpoint, usb_buf, INTERRUPT_SIZE, &transferred, 0);
+	memcpy(buffer, usb_buf, 4);
 }
 
