@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "aciodrv/device.h"
 #include "acio/mdxf.h"
+#include "util/log.h"
 #include "mdxf.h"
 #include "p4io.h"
 
@@ -9,8 +10,6 @@
 
 #include <libevdev/libevdev.h>
 #include <libevdev/libevdev-uinput.h>
-
-// TODO: Maybe split the device into 2 or 3 and map inputs to sensible buttons
 
 #define DDR_1P_LEFT 		BTN_0
 #define DDR_1P_DOWN 		BTN_1
@@ -58,7 +57,7 @@ int main(int argc, char *argv[]) {
 	struct libevdev *p1dev, *p2dev, *opdev;
 	struct libevdev_uinput *p1uidev, *p2uidev, *opuidev;
 	struct aciodrv_device_ctx *device;
-	
+
 	libusb_device_handle *p4io_h = NULL;
 	struct libusb_endpoint_descriptor *bulk_out, *bulk_in, *intr_in;
 	struct p4io_data int_buffer;
@@ -74,8 +73,12 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
+#ifdef P4IO_DEBUG_BUILD
+	log_to_writer(log_writer_stdout, NULL);
+#endif
+
 	printf("Hello, World!\n");
-	
+
 	p1dev = libevdev_new();
 	p2dev = libevdev_new();
 	opdev = libevdev_new();
@@ -237,8 +240,9 @@ void *run_poll(struct aciodrv_device_ctx *device) {
 	while (1) {
 		for (i=0; i<2; i++) {
 			if (!aciodrv_mdxf_recv_poll(device, i, (struct ac_io_mdxf_poll_in *) &poll_in)) {
-				printf("poll failed, stopping operation\n");
-				return NULL;
+#ifdef P4IO_DEBUG_BUILD
+				printf("WARNING: Poll Failed\n");
+#endif
 			}
 			memcpy(&pad_dest[2*i], poll_in, 2);
 		}

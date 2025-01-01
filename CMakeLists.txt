@@ -27,6 +27,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 
 if ( DEBUG_BUILD )
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+    add_compile_definitions(AC_IO_MSG_LOG P4IO_DEBUG_BUILD)
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
 endif()
