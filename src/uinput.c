@@ -158,8 +158,15 @@ int main(int argc, char *argv[]) {
 	interval = usb_get_interval_usec(p4io_h, intr_in->bInterval);
 
 	printf("Input interval: %d\n", interval);
+	/*
 	t.tv_sec = 0;
 	t.tv_nsec = interval * 1000;
+	*/
+	
+	// MDXF poll is too slow, ignore USB spec and just poll in 125hz
+	// surely it will work :clueless:
+	t.tv_sec = 0;
+	t.tv_nsec = 8000000;
 
 	printf("Opening connection on %s @ 115200\n", argv[1]);
 
