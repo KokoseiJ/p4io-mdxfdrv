@@ -51,7 +51,7 @@ else()
     add_library(p4io_thread STATIC src/thread/thread_win.c)
 endif()
 
-add_library(aciodrv STATIC bemanitools/src/main/aciodrv/device.c)
+add_library(aciodrv STATIC src/drv/device-optimized.c)
 target_link_libraries(aciodrv aciodrv_port util)
 
 add_executable(mdxftest src/main.c src/mdxf.c)
