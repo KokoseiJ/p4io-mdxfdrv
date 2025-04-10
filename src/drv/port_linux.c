@@ -8,6 +8,11 @@
 
 #define log_errno(x) log_warning("%s() failed: %d(%s)", x, errno, strerror(errno))
 
+#define READBUF_SIZE 512
+
+uint8_t read_buffer[READBUF_SIZE];
+int readbuf_idx, readbuf_len;
+
 /**
  * Open a serial port for communication with a ACIO device.
  *
@@ -123,11 +128,25 @@ int aciodrv_port_read(HANDLE port_fd, void *bytes, int nbytes) {
 		return -1;
 	}
 
-	read_bytes = read(port_fd, bytes, nbytes);
-	if (read_bytes < 0) {
-		log_errno("read");
-		return -1;
+	// Buffer empty/exhausted, reset and repopulate
+	if (readbuf_idx == readbuf_len) {
+		readbuf_idx = 0;
+		readbuf_len = read(port_fd, read_buffer, READBUF_SIZE);
+		// Nothing to read, we circle back later
+		if (!readbuf_len) return 0;
+		else if (readbuf_len < 0) {
+			// balls 3
+			readbuf_len = 0;
+			log_errno("read");
+			return -1;
+		}
 	}
+
+	read_bytes = ( nbytes < (readbuf_len - readbuf_idx) )
+		? nbytes : (readbuf_len - readbuf_idx);
+
+	memcpy(bytes, read_buffer + readbuf_idx, read_bytes);
+	readbuf_idx+=read_bytes;
 
 	return read_bytes;
 }
