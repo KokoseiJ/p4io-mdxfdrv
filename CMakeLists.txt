@@ -27,7 +27,10 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 
 if ( DEBUG_BUILD )
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-    add_compile_definitions(AC_IO_MSG_LOG P4IO_DEBUG_BUILD)
+    add_compile_definitions(
+		# AC_IO_MSG_LOG
+		P4IO_DEBUG_BUILD
+	)
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
 endif()
@@ -40,6 +43,7 @@ if ( NOT TARGET_WIN )
     add_library(aciodrv_port STATIC src/drv/port_linux.c src/drv/termios_util.c)
     add_library(util STATIC src/util/log_linux.c
                             src/util/util.c
+							bemanitools/src/main/util/hex.c
     )
     add_library(p4io_thread STATIC src/thread/thread_linux.c)
 else()
@@ -47,6 +51,7 @@ else()
     add_library(util STATIC bemanitools/src/main/util/log.c
                             bemanitools/src/main/util/mem.c
                             bemanitools/src/main/util/str.c
+							bemanitools/src/main/util/hex.c
     )
     add_library(p4io_thread STATIC src/thread/thread_win.c)
 endif()
