@@ -163,10 +163,10 @@ int main(int argc, char *argv[]) {
 	t.tv_nsec = interval * 1000;
 	*/
 	
-	// MDXF poll is too slow, ignore USB spec and just poll in 125hz
+	// MDXF poll is too slow, ignore USB spec and just poll in 1000hz
 	// surely it will work :clueless:
 	t.tv_sec = 0;
-	t.tv_nsec = 8000000;
+	t.tv_nsec = 1000000;
 
 	printf("Opening connection on %s @ 115200\n", argv[1]);
 
