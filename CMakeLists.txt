@@ -35,6 +35,12 @@ else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
 endif()
 
+if ( MDXF_AUTOGET )
+    add_compile_definitions(
+        MDXF_AUTOGET
+    )
+endif()
+
 add_subdirectory(extern/libusb-cmake)
 
 include_directories(bemanitools/src/main)
