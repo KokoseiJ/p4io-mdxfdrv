@@ -1,0 +1,6 @@
+# udev rules for the driver.
+# please ensure uinput and mdxf group are added
+
+KERNEL=="uinput", SUBSYSTEM=="misc", GROUP="uinput", MODE="0660"
+SUBSYSTEM=="usb", DRIVER=="usb", ATTR{idProduct}=="1ccf", ATTR{idVendor}=="8010", GROUP="mdxf", MODE="0660"
+
