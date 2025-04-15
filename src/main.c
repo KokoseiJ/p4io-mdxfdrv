@@ -51,11 +51,13 @@ int main(int argc, char *argv[]) {
 	printf("press enter to start polling...");
 	getchar();
 
+#ifdef MDXF_AUTOGET
 	printf("Sending 0x0116 start polling...\n");
 	if (!aciodrv_mdxf_start_auto_get(device, 0)) {
 		printf("and mdxf didnt like that. boowomp");
 		return -1;
 	}
+#endif
 
 	/* yes it has no mechanism to signal other thread
 	 * unfortunately I dont care LMAOOOOO

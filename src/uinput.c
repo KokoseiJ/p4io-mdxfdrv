@@ -37,7 +37,7 @@
 #define DDR_OP_SERVICE 		BTN_1
 #define DDR_OP_COIN 		BTN_2
 
-struct p4io_pad {
+struct mdxf_pad {
 	uint8_t p1_down : 4;
 	uint8_t p1_up : 4;
 	uint8_t p1_right: 4;
@@ -48,9 +48,27 @@ struct p4io_pad {
 	uint8_t p2_left: 4;
 };
 
-struct p4io_pad pad_in;
+struct mdxf_pad pad_in;
 
-void *run_poll(struct aciodrv_device_ctx *device);
+void *thread_poll(struct aciodrv_device_ctx *device);
+
+uint8_t mdxf_poll(struct aciodrv_device_ctx *device, struct mdxf_pad *pad_in) {
+	uint8_t i;
+	uint8_t poll_in[3];
+	uint8_t *pad_dest = (uint8_t *) pad_in;
+
+	for (i=0; i<2; i++) {
+		if (!aciodrv_mdxf_recv_poll(device, i, (struct ac_io_mdxf_poll_in *) &poll_in)) {
+#ifdef P4IO_DEBUG_BUILD
+			printf("WARNING: Poll Failed\n");
+			return 1;
+#endif
+		}
+		memcpy(&pad_dest[2*i], poll_in, 2);
+	}
+
+	return 0;
+}
 
 
 int main(int argc, char *argv[]) {
@@ -65,8 +83,11 @@ int main(int argc, char *argv[]) {
 
 	uint8_t nodes;
 	int i, err, interval;
-	pthread_t thread;
 	struct input_absinfo absinfo = {0,};
+
+#ifdef MDXF_AUTOGET
+	pthread_t thread;
+#endif
 
 	if (argc != 2) {
 		printf("try again with 1 argument\n");
@@ -188,22 +209,28 @@ int main(int argc, char *argv[]) {
 
 	/* open path should've opened all nodes already */
 
+#ifdef MDXF_AUTOGET
 	printf("Sending 0x0116 start polling...\n");
 	if (!aciodrv_mdxf_start_auto_get(device, 0)) {
 		printf("and mdxf didnt like that. boowomp");
 		return -1;
 	}
 
-	err = pthread_create(&thread, NULL, (void * (*) (void *)) run_poll, device);
+	err = pthread_create(&thread, NULL, (void * (*) (void *)) thread_poll, device);
 	if (err != 0) {
 		printf("Thread creation failed: %d\n", err);
 		return -1;
 	}
+#endif
 
 	printf("And let er rip!\n\n");
 
 	while (1) {
 		p4io_poll(p4io_h, intr_in->bEndpointAddress, &int_buffer);
+
+#ifndef MDXF_AUTOGET
+		mdxf_poll(device, &pad_in);
+#endif
 
 		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_MENU_LEFT, int_buffer.p1_left);
 		libevdev_uinput_write_event(p1uidev, EV_KEY, DDR_1P_MENU_DOWN, int_buffer.p1_down);
@@ -239,20 +266,10 @@ int main(int argc, char *argv[]) {
 }
 
 
-void *run_poll(struct aciodrv_device_ctx *device) {
-	uint8_t i;
-	uint8_t poll_in[3];
-	uint8_t *pad_dest = (uint8_t *) &pad_in;
-
+void *thread_poll(struct aciodrv_device_ctx *device) {
+	// Only for autoget build to keep up with pad data
 	while (1) {
-		for (i=0; i<2; i++) {
-			if (!aciodrv_mdxf_recv_poll(device, i, (struct ac_io_mdxf_poll_in *) &poll_in)) {
-#ifdef P4IO_DEBUG_BUILD
-				printf("WARNING: Poll Failed\n");
-#endif
-			}
-			memcpy(&pad_dest[2*i], poll_in, 2);
-		}
+		mdxf_poll(device, &pad_in);
 	}
 
 	return NULL;
