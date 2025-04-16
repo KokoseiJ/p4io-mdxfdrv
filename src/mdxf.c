@@ -30,13 +30,12 @@ bool aciodrv_mdxf_recv_poll(
 ) {
 	struct ac_io_message msg;
 	
-	msg.addr = node_id + 1;
-	msg.cmd.code = ac_io_u16(AC_IO_CMD_MDXF_POLL);
-	msg.cmd.nbytes = 3;
-
 #ifdef MDXF_AUTOGET
 	if (!aciodrv_recv(
 #else
+	msg.addr = node_id + 1;
+	msg.cmd.code = ac_io_u16(AC_IO_CMD_MDXF_POLL);
+	msg.cmd.nbytes = 0;
 	if (!aciodrv_send_and_recv(
 #endif
 		device,
