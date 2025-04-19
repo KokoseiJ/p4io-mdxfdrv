@@ -12,7 +12,7 @@ First, set device permissions using [99-p4io.rules](99-p4io.rules) to `/etc/udev
 ```bash
 sudo curl -Lo /etc/udev/rules.d/99-p4io.rules https://raw.githubusercontent.com/KokoseiJ/p4io_mdxfdrv/refs/heads/master/99-p4io.rules
 # Adding your user to groups to have permission
-sudo usermod -aG uinput,mdxf your_username_here
+sudo usermod -aG uinput,p4io your_username_here
 # Reloading rules
 sudo udevadm control --reload-rules
 sudo udevadm trigger
