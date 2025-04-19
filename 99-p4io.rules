@@ -1,5 +1,5 @@
 # udev rules for the driver.
-# please ensure uinput and mdxf group are added
+# please ensure uinput and p4io group are added
 
 KERNEL=="uinput", SUBSYSTEM=="misc", GROUP="uinput", MODE="0660"
-ATTR{idProduct}=="1ccf", ATTR{idVendor}=="8010", GROUP="mdxf", MODE="0660"
+ATTR{idProduct}=="1ccf", ATTR{idVendor}=="8010", GROUP="p4io", MODE="0660"
