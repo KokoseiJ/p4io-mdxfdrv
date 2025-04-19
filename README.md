@@ -7,8 +7,33 @@ Only tested with ADE-704A systems. If you have ADE-6291 system that you wish to 
 
 This driver is set to run in polling mode by default; which means it behaves slightly differently to the official game (for the better technically), and apparently it may stop the aftermarket pad light board from working. You can use `-DMDXF_AUTOGET=1` flag on CMake to build a driver compatible to it, though it may cause polling issues.
 
-## How do I use this?
-Run the `mdxfuinput` binary with a path to MDXF serial device (should be `/dev/ttyS1` on stock systems). Please ensure that you have the right permission for uinput and reading tty devices.
+## Usage
+First, set device permissions using [99-p4io.rules](99-p4io.rules) to `/etc/udev/rules.d`:
+```bash
+sudo curl -Lo /etc/udev/rules.d/99-p4io.rules https://raw.githubusercontent.com/KokoseiJ/p4io_mdxfdrv/refs/heads/master/99-p4io.rules
+# Adding your user to groups to have permission
+sudo usermod -aG uinput,mdxf your_username_here
+# Reloading rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+This will allow you to run the program without using sudo. Please restart the shell for the changes to take effect.
+
+To enable the controller, run the `mdxfuinput` binary with a path to MDXF serial device (this is typically /dev/ttyS1):
+```bash
+./mdxfuinput /dev/ttyS1
+```
+Now, when you start up stepmania, it will register 3 joystick devices.
+
+Sample launch script:
+```bash
+!/bin/bash
+
+# Starts up driver in the background
+./mdxfuinput /dev/ttyS1 &
+# Starts up the game
+./itgmania
+```
 
 ## TODO list
 * Implement ddrio interface on windows
