@@ -37,7 +37,7 @@ HANDLE aciodrv_port_open(const char *port_path, int baud) {
 	 * OPEN_EXISTING flag isn't feasible on Linux nor needed
 	 * FILE_FLAG_WRITE_THROUGH equivalent is set with termios
 	 */
-	handle = open(port_path, O_RDWR, O_NOCTTY);
+	handle = open(port_path, O_RDWR, O_NOCTTY, O_NONBLOCK);
 	if (handle < 0) {
 		log_errno("open");
 		return 0;
@@ -58,7 +58,9 @@ HANDLE aciodrv_port_open(const char *port_path, int baud) {
 	cfsetspeed(&termios_p, bauddata);
 
 	/* fuck it, just copy what wine does line-by-line */
-	termios_p.c_iflag &= ~(ISTRIP|BRKINT|IGNCR|ICRNL|INLCR|PARMRK|IMAXBEL);
+	termios_p.c_iflag &= ~(
+		IXON|IXOFF|IXANY|ISTRIP|BRKINT|IGNCR|ICRNL|INLCR|PARMRK|IMAXBEL
+	);
 	termios_p.c_iflag |= IGNBRK | INPCK;
 	termios_p.c_oflag &= ~(OPOST);
 	termios_p.c_cflag |= CLOCAL | CREAD;
