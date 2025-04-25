@@ -2,4 +2,5 @@
 # please ensure uinput and p4io group are added
 
 KERNEL=="uinput", SUBSYSTEM=="misc", GROUP="uinput", MODE="0660"
-ATTR{idProduct}=="1ccf", ATTR{idVendor}=="8010", GROUP="p4io", MODE="0660"
+ATTR{idProduct}=="8010", ATTR{idVendor}=="1ccf", GROUP="p4io", MODE="0660"
+
