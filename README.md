@@ -3,7 +3,7 @@
 ## What is this?
 Uinput driver for DanceDanceRevolution White cabinet controls. This will make stock DDR white cab hardware (pads, front buttons and test/service buttons) be recognized as 3 gamepads on Linux systems.
 
-Only tested with ADE-704A systems. If you have ADE-6291 system that you wish to test this on, please let me know how it went!
+Tested on both ADE-704A and ADE-6291 System.
 
 This driver is set to run in polling mode by default; which means it behaves slightly differently to the official game (for the better technically), and apparently it may stop the aftermarket pad light board from working. You can use `-DMDXF_AUTOGET=1` flag on CMake to build a driver compatible to it, though it may cause polling issues.
 
@@ -27,7 +27,8 @@ Now, when you start up stepmania, it will register 3 joystick devices.
 
 Sample launch script:
 ```bash
-!/bin/bash
+#!/bin/bash
+# Example .xinitrc file for p4io-mdxfdrv
 
 # Starts up driver in the background
 ./mdxfuinput /dev/ttyS1 &
@@ -47,6 +48,7 @@ Sample launch script:
 * The team behind [Bemanitools](https://github.com/djhackersdev/bemanitools): This project is LARGELY based on your work and research!
 * [Zenith Arcade](https://zenitharcade.com/) for being my autism bouncy castle
 * DinsFire64 for helpful pointers along the journey
+* Alpha for testing on 6291 system and sending in some fixes
 * Amazing ITG players from Vancouver local scene for chiming in and testing the driver!
 
 ## Nerd section
